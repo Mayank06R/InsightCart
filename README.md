@@ -1,253 +1,197 @@
-# E-Commerce Analytics Dashboard
+# InsightCart — E-commerce Intelligence Platform
 
-A full-stack analytics dashboard for an e-commerce store: real MongoDB
-aggregation pipelines power interactive revenue, order, category, and
-status charts, with server-side filtering, search, pagination, and CSV
-export — all built and tested across eight incremental parts.
+InsightCart is a MERN-based e-commerce analytics dashboard for exploring sales performance and customer purchase behaviour. It combines a React dashboard with Express REST APIs and MongoDB aggregation pipelines. This repository extends the upstream dashboard with a Customer Intelligence page and RFM-style customer segmentation.
 
-![Dashboard — light mode](docs/screenshots/dashboard-light.png)
-
-<details>
-<summary>Dark mode & mobile</summary>
-
-![Dashboard — dark mode](docs/screenshots/dashboard-dark.png)
-![Dashboard — mobile](docs/screenshots/dashboard-mobile.png)
-
-</details>
-
-> Screenshots are from local testing against a realistic fixture dataset —
-> no data here is fabricated or hand-tuned to look better than the real
-> seeded database.
-
-## Live Demo
-
-**Live app:** [https://ecommerce-analytics-dashboard-production-a7a5.up.railway.app](https://ecommerce-analytics-dashboard-production-a7a5.up.railway.app)
-
-Deployed on [Railway](https://railway.app) — frontend and backend run as
-separate services (`incredible-enjoyment` and `imaginative-charm`
-respectively) connected to a MongoDB Atlas cluster. See
-[Deployment](#deployment) below for the exact setup.
+> **Project background:** InsightCart is a customized fork of [ecommerce-analytics-dashboard](https://github.com/ma-usman-pro/ecommerce-analytics-dashboard). The upstream project provides the base e-commerce dashboard and API. The additions made in InsightCart are described below; this repository should not be represented as an entirely original codebase.
 
 ## Features
 
-- **Real MongoDB aggregation** — revenue, orders, category, and
-  order-status analytics are computed server-side with `$match`/
-  `$group`/`$unwind`/`$facet` pipelines against real order/item data, not
-  precomputed or hardcoded.
-- **Interactive charts** — revenue area chart, orders bar chart, and two
-  donut charts (category revenue, order status) built with Recharts,
-  fully responsive and dark-mode aware.
-- **Server-side filtering** — date range (6 presets + custom), category,
-  and order status, all consistently applied across stat cards, charts,
-  tables, and CSV export from one shared filter state (also mirrored into
-  the URL).
-- **Real trend percentages** — stat cards compare the selected period
-  against the immediately preceding period of equal length, computed from
-  two live API calls. Never a fabricated `+12.4%`.
-- **Orders & Products pages** — debounced search, server-side pagination,
-  and status filtering, without loading full collections into the browser.
-- **CSV export** — respects whatever filters are currently active.
-- **Light & dark mode**, fully responsive (tested 375px–1920px).
-- **Automated tests** — 66 backend (Vitest + Supertest), 103 frontend
-  (Vitest + React Testing Library), 2 Playwright E2E tests.
-- **Production hardening** — Helmet, rate limiting, environment-aware CORS
-  (fails closed rather than defaulting to `*`), a DB-aware health check,
-  and no stack traces leaked in error responses.
+### E-commerce analytics
 
-## Tech Stack
+- Summary metrics for revenue, orders, customers, and average order value.
+- Revenue and order trends visualized with Recharts.
+- Category revenue and order-status breakdowns.
+- Top-product analysis.
+- Server-side date, category, and status filters.
+- Search and server-side pagination for orders and products.
+- CSV export that respects active filters.
+- Responsive layout with light and dark modes.
 
-| Layer | Technology |
+### Customer Intelligence — InsightCart additions
+
+- Dedicated Customer Intelligence page at `/customers`.
+- Server-side customer purchase metrics calculated from MongoDB data.
+- Recency, frequency, and monetary values, with rank-based scores from 1 to 5.
+- Customer segments: Champions, Loyal Customers, Potential Loyalists, At Risk, Hibernating, and Needs Attention.
+- Segment summaries, customer search and filtering, sorting, and CSV export in the UI.
+- API endpoint: `GET /api/analytics/customer-segments`.
+- Dedicated unit tests for the segmentation service.
+
+### RFM methodology
+
+- **Recency:** days since the customer's most recent eligible order; fewer days is better.
+- **Frequency:** number of eligible orders for the customer.
+- **Monetary:** sum of eligible orders' `totalAmount` values.
+
+The current implementation includes `Completed`, `Processing`, and `Pending` orders in these metrics. `Cancelled` and `Refunded` orders are excluded, following the base project's default revenue rules. Scores are derived from the ranks of distinct metric values, and segment labels are assigned using explicit rules in the segmentation service. Customers without eligible orders are not included in the current RFM response.
+
+## Technology stack
+
+| Layer | Technologies |
 |---|---|
-| Frontend | React 18, Vite, Tailwind CSS, Recharts, React Router, Axios |
-| Backend | Node.js, Express, Mongoose |
-| Database | MongoDB (MongoDB Atlas in production) |
-| Hosting | Railway (frontend + backend as separate services) |
-| Testing | Vitest, React Testing Library, Supertest, Playwright |
-| Security | Helmet, express-rate-limit, environment-aware CORS |
+| Frontend | React 18, Vite, Tailwind CSS, React Router, Axios, Recharts |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose; MongoDB Atlas or local MongoDB |
+| Testing | Vitest, React Testing Library, Supertest; Playwright E2E setup in the base project |
+| Security and API | Helmet, `express-rate-limit`, environment-aware CORS, health-check endpoint |
 
 ## Architecture
 
+```text
+React + Vite frontend
+        │ Axios / HTTP JSON
+        ▼
+Express REST API
+        │ routes → controllers → services
+        ▼
+Mongoose / MongoDB
+        └── aggregation pipelines for analytics and customer segmentation
 ```
-React (Vite) frontend  ──HTTP/JSON──>  Express REST API  ──Mongoose──>  MongoDB
-   client/src/api/*                     server/routes → controllers
-   (Axios, VITE_API_URL)                → services → aggregation
-                                           pipelines
-```
 
-- **Frontend** (`client/`) — a single-page app (React Router) that never
-  talks to MongoDB directly; every number on screen comes from
-  `client/src/api/*.js`, which reads `VITE_API_URL`.
-- **Backend** (`server/`) — `app.js` builds the Express app (routes,
-  middleware, no DB connection — this is what tests import directly);
-  `server.js` is the actual entry point that connects to MongoDB and
-  starts listening. Routes → controllers → services, with MongoDB
-  aggregation living in `services/analyticsService.js`.
-- **Database** — Mongoose models for `Product`, `Customer`, and `Order`
-  (with embedded line items and shipping address), plus a seed script
-  that generates ~48 products, ~100 customers, and 300–500 realistic
-  orders spread across 6–12 months.
+The frontend communicates with the backend API; it does not connect directly to MongoDB. The backend entry point is `server/server.js`, while `server/app.js` configures Express middleware and routes.
 
-## Local Setup
+## Run locally (Windows PowerShell)
 
-Requires Node.js 18+ and a MongoDB instance (local or Atlas).
+### Prerequisites
 
-```bash
-# 1. Backend
+- Node.js and npm versions compatible with the packages' declared engine requirements.
+- A MongoDB database: MongoDB Atlas or a local MongoDB instance.
+- Git.
+
+### 1. Configure and start the backend
+
+From the repository root:
+
+```powershell
 cd server
-cp .env.example .env      # set a real MONGO_URI
-npm install
-npm run seed               # populate the database with realistic sample data
-npm start                  # http://localhost:5000
+Copy-Item .env.example .env
+```
 
-# 2. Frontend (in a new terminal)
+Edit `server/.env` and set `MONGO_URI` to your MongoDB connection string. Keep credentials in `.env`; do not commit them. The example URI in `.env.example` is for a local MongoDB instance and will only work if you are running MongoDB locally.
+
+Then install dependencies and start the API:
+
+```powershell
+npm install
+npm start
+```
+
+The API listens on `http://localhost:5000` by default. Check the connection status at `http://localhost:5000/api/health`.
+
+### 2. Optional: seed demo data
+
+Use a dedicated development database. From the `server` folder, run:
+
+```powershell
+npm run seed
+```
+
+> **Warning:** The seed script clears existing demo records in the database specified by `MONGO_URI` before inserting sample products, customers, and orders. Do not run it against a database containing data you need to keep.
+
+### 3. Configure and start the frontend
+
+Open a **second terminal** at the repository root:
+
+```powershell
 cd client
-cp .env.example .env      # VITE_API_URL=http://localhost:5000/api
+Copy-Item .env.example .env
+```
+
+Ensure `client/.env` contains:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Then run:
+
+```powershell
 npm install
-npm run dev                 # http://localhost:5173
+npm run dev
 ```
 
-### Tests
+Open the local URL printed by Vite, usually `http://localhost:5173`. Visit `/customers` for the Customer Intelligence page.
 
-```bash
-# Backend
-cd server && npm run test:run        # or npm run test:coverage
+## API endpoints
 
-# Frontend
-cd client && npm run test:run        # or npm run test:coverage
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | API and database health status |
+| GET | `/api/analytics/summary` | Summary metrics |
+| GET | `/api/analytics/revenue` | Revenue grouped by date |
+| GET | `/api/analytics/orders` | Orders grouped by date |
+| GET | `/api/analytics/categories` | Revenue by product category |
+| GET | `/api/analytics/order-status` | Order counts by status |
+| GET | `/api/analytics/top-products` | Best-selling products |
+| GET | `/api/analytics/customer-segments` | RFM-style customer metrics and segment summaries |
+| GET | `/api/orders` | Searchable, filterable, paginated orders |
+| GET | `/api/orders/recent` | Recent orders |
+| GET | `/api/products` | Searchable, paginated products |
+| GET | `/api/customers` | Searchable, paginated customers |
+| GET | `/api/categories` | Categories read from the database |
 
-# End-to-end (needs the app built + served, and a running backend — see client/README.md)
-cd client && npm run test:e2e
+Most analytics endpoints return JSON in the shape `{ success, data }`. Paginated resource endpoints also include pagination metadata.
+
+## Tests and production build
+
+Run backend tests from the `server` folder:
+
+```powershell
+npm run test:run
 ```
 
-**Coverage summary** — 106 frontend tests, 66 backend tests, 2 E2E tests,
-all passing:
+Run frontend tests from the `client` folder:
 
-- **Frontend** (Vitest + React Testing Library + user-event): dashboard/
-  component rendering (stat cards, all 4 charts, tables — loading/error/
-  empty states included), real user interactions (category + date-preset
-  filter changes, Reset Filters, sorting and the Top 5/10/20 limit
-  selector, pagination boundaries, debounced search, CSV export), and
-  date-range input validation (the app has no data-entry forms, so the
-  nearest real analog — the custom date picker's start/end constraints —
-  is what's tested instead)
-- **Backend** (Vitest + Supertest): happy-path success and response shape
-  for every analytics/orders/products/customers/categories endpoint, plus
-  failure cases — invalid/incomplete/reversed dates, invalid status,
-  invalid pagination, limit out of range — and real calculation
-  correctness (revenue/AOV math, category totals, order-status
-  zero-filling) against controlled fixtures, not just HTTP 200 checks
-- **E2E** (Playwright): the realistic dashboard flow — load, wait for real
-  analytics, change the category filter, change the date range, confirm
-  every section (stat cards, all 4 charts, top products, recent orders)
-  is still present with zero 5xx responses — plus a mobile-viewport
-  overflow check
-
-See `server/README.md` and `client/README.md` for the full test
-breakdown (what each file covers) and the specific database-isolation
-approach used for backend tests (no live/in-memory MongoDB was available
-in the sandbox this was built in — see that README for details and the
-one real limitation that follows from it).
-
-## Environment Variables
-
-**`server/.env`** (see `server/.env.example`):
-
-| Variable | Purpose |
-|---|---|
-| `MONGO_URI` | MongoDB connection string. Never hardcoded, never committed. |
-| `PORT` | Port the Express server listens on (default 5000). |
-| `NODE_ENV` | `development` or `production` — controls CORS strictness and whether error responses include detail. |
-| `CLIENT_URL` | The deployed frontend's origin, for CORS. **Required** in production — if unset, cross-origin requests are rejected rather than falling back to allow-all. |
-
-**`client/.env`** (see `client/.env.example`):
-
-| Variable | Purpose |
-|---|---|
-| `VITE_API_URL` | Base URL of the backend API, e.g. `http://localhost:5000/api` in development or `https://your-backend-domain.com/api` in production. Every frontend API call reads this — nothing is hardcoded to `localhost`. |
-
-No secrets (database credentials, API keys) are ever read by or exposed
-to the frontend — `MONGO_URI` exists only in the backend's environment.
-
-## Deployment
-
-Deployed on [Railway](https://railway.app) as two separate services
-sharing a project, connected to a MongoDB Atlas cluster:
-
-**Backend** (`imaginative-charm`):
-- Build command: `npm install`
-- Start command: `npm start`
-- Environment variables: `MONGO_URI` (Atlas connection string), `PORT`
-  (provided by Railway), `NODE_ENV=production`, `CLIENT_URL` (the
-  frontend service's public URL, for CORS)
-- The app fails closed on CORS if `CLIENT_URL` is missing in production
-  (logs a warning rather than silently allowing every origin)
-- `GET /api/health` returns `{ success: true, status: "ok", database:
-  "connected" | "disconnected" }` for uptime monitoring
-
-**Frontend** (`incredible-enjoyment`):
-- Build command: `npm run build`
-- Output directory: `dist`
-- Environment variable: `VITE_API_URL=<backend service URL>/api`
-- Route-level code splitting is already in place (`React.lazy`), so the
-  initial JS payload doesn't include the charting library until you
-  actually visit the dashboard
-
-**Database** — MongoDB Atlas, seeded once via `npm run seed` run against
-the production connection string (never run automatically on server
-start).
-
-## Performance & Accessibility
-
-A local Lighthouse audit (see `client/README.md` for how to reproduce)
-found and led to fixing:
-
-1. **Bundle size** — route-level code splitting cut the initial JS
-   payload from 688 KB to 182 KB by moving Recharts into a
-   Dashboard-only lazy chunk.
-2. **Color contrast** — two color/text combinations failed WCAG AA
-   (2.56:1 and 4.38:1 against the 4.5:1 minimum); fixing them raised the
-   Lighthouse Accessibility score from 95 to **100**.
-3. **Render-blocking fonts** — switched the Google Fonts stylesheet to a
-   non-blocking preload-then-swap pattern, improving Largest Contentful
-   Paint from ~3.7s to ~3.1s in the same audit environment.
-
-One remaining, documented (not "fixed blindly") finding: Recharts itself
-ships a meaningful amount of code that isn't fully tree-shakeable
-(~89 KB flagged as unused in its own chunk) — a known limitation of that
-library, not something addressed here since swapping charting libraries
-was explicitly out of scope for this project.
-
-## API
-
-All responses follow `{ success: boolean, data, message? }`; paginated
-endpoints also include a `pagination` object.
-
-| Endpoint | Description |
-|---|---|
-| `GET /api/analytics/summary` | Total revenue, orders, customers, average order value |
-| `GET /api/analytics/revenue` | Revenue grouped by date |
-| `GET /api/analytics/orders` | Order count grouped by date |
-| `GET /api/analytics/categories` | Revenue grouped by category |
-| `GET /api/analytics/order-status` | Order count per status (all 5 statuses always present) |
-| `GET /api/analytics/top-products` | Best-selling products, sortable, `?limit=` (max 50) |
-| `GET /api/orders` | Paginated order list — `page`, `limit`, `search`, `status`, `category`, `startDate`, `endDate` |
-| `GET /api/orders/recent` | Latest orders |
-| `GET /api/products` | Paginated product list — `search`, `category` |
-| `GET /api/customers` | Paginated customer list — `search` |
-| `GET /api/categories` | Category names, read live from the database (never hardcoded) |
-| `GET /api/health` | Health check, includes DB connection status |
-
-All analytics endpoints accept `startDate`/`endDate` (paired,
-`YYYY-MM-DD`) and `category` (omit or `All` for no filter); revenue
-figures count `Completed`/`Processing`/`Pending` orders unless an
-explicit `status` is requested.
-
-## Project Structure
-
-```
-server/     Express API, Mongoose models, seed script, tests   → server/README.md
-client/     React dashboard, tests, E2E                        → client/README.md
-docs/       Screenshots
+```powershell
+npm run test:run
 ```
 
-See the two package-level READMEs for full directory breakdowns.
+Create the production frontend build from the `client` folder:
+
+```powershell
+npm run build
+```
+
+**Last locally verified for this customized version:** 68 backend tests passed, 106 frontend tests passed, and `vite build` completed successfully. The RFM service has a dedicated unit-test file, though further edge-case coverage remains a useful improvement. E2E tests exist in the upstream project but were not re-run during this update.
+
+## Repository structure
+
+```text
+client/
+  src/api/                 API client functions
+  src/components/          Reusable UI components
+  src/pages/               Dashboard, orders, products, and customer intelligence pages
+server/
+  controllers/              HTTP request handlers
+  routes/                   Express route definitions
+  services/                 Business logic and aggregation pipelines
+  models/                   Mongoose models
+  tests/                    Unit and integration tests
+docs/screenshots/           Existing dashboard screenshots
+```
+
+## Contributions in this fork
+
+The main additions made in InsightCart are:
+
+- Rebranding the UI as InsightCart.
+- Adding the Customer Intelligence frontend page.
+- Adding the RFM-style customer segmentation service and API route.
+- Adding unit tests for the segmentation service.
+- Updating the README to document the fork and the custom additions.
+
+The upstream dashboard remains the foundation for the sales, order, and product analytics. See the [upstream repository](https://github.com/ma-usman-pro/ecommerce-analytics-dashboard) for the source project.
+
+## License and attribution
+
+This repository is a fork and retains attribution to the upstream project. Confirm the upstream project's applicable license and permissions before redistributing or reusing its code outside the context of this fork. Do not assume that the absence of a visible license grants unrestricted reuse rights.
