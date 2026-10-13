@@ -10,7 +10,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const CustomerSegmentsPage = lazy(() => import("./pages/CustomerSegmentsPage"));
-const Placeholder = lazy(() => import("./pages/Placeholder"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 function RouteFallback() {
   return (
@@ -33,8 +34,8 @@ export default function App() {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/customers" element={<CustomerSegmentsPage />} />
-            <Route path="/analytics" element={<Placeholder title="Analytics" />} />
-            <Route path="/settings" element={<Placeholder title="Settings" />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
       </Suspense>
