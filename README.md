@@ -10,8 +10,7 @@ InsightCart is a full-stack e-commerce analytics dashboard with interactive sale
 - **Customer Intelligence:** [Open `/customers`](https://insightcart-web.onrender.com/customers)
 - **Analytics Studio:** [Open `/analytics`](https://insightcart-web.onrender.com/analytics)
 - **Settings:** [Open `/settings`](https://insightcart-web.onrender.com/settings)
-- **Backend API:** [insightcart-qvct.onrender.com](https://insightcart-qvct.onrender.com)
-- **API health check:** [GET `/api/health`](https://insightcart-qvct.onrender.com/api/health)
+- **Backend API health:** [GET `/api/health`](https://insightcart-qvct.onrender.com/api/health)
 
 The API is hosted on Render and uses MongoDB Atlas. The free backend instance may spin down after a period of inactivity, so the first request after idle time can take longer while it wakes up.
 
