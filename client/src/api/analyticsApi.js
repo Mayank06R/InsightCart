@@ -38,3 +38,8 @@ export async function getCategories() {
   const { data } = await api.get("/categories");
   return data.data;
 }
+
+export async function getCustomerSegments() {
+  const { data } = await api.get("/analytics/customer-segments");
+  return data.data;
+}

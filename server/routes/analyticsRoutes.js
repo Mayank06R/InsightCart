@@ -9,4 +9,6 @@ router.get("/categories", controller.getCategoryRevenue);
 router.get("/order-status", controller.getOrderStatusBreakdown);
 router.get("/top-products", controller.getTopProducts);
 
+router.get("/customer-segments", controller.getCustomerSegments);
+
 module.exports = router;

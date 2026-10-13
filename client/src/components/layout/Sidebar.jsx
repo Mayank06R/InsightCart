@@ -53,7 +53,7 @@ export function Sidebar({ mobileOpen, onClose }) {
             E
           </div>
           <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Ecom Analytics
+           InsightCart
           </span>
         </div>
         <NavItems />
@@ -74,7 +74,7 @@ export function Sidebar({ mobileOpen, onClose }) {
                   E
                 </div>
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Ecom Analytics
+               InsightCart
                 </span>
               </div>
               <button

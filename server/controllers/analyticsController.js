@@ -7,6 +7,7 @@ const {
   parseLimitParam,
 } = require("../utils/queryHelpers");
 const analyticsService = require("../services/analyticsService");
+const customerSegmentationService = require("../services/customerSegmentationService");
 
 function parseCommonFilters(query) {
   const { startDate, endDate } = parseDateRange(query);
@@ -50,5 +51,10 @@ exports.getTopProducts = asyncHandler(async (req, res) => {
   const filters = parseCommonFilters(req.query);
   const limit = parseLimitParam(req.query, { defaultValue: 10, max: 50 });
   const data = await analyticsService.getTopProducts({ ...filters, limit });
+  success(res, 200, data);
+});
+
+exports.getCustomerSegments = asyncHandler(async (req, res) => {
+  const data = await customerSegmentationService.getCustomerSegments();
   success(res, 200, data);
 });

@@ -9,6 +9,7 @@ import { DashboardFilterProvider } from "./context/DashboardFilterContext";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const CustomerSegmentsPage = lazy(() => import("./pages/CustomerSegmentsPage"));
 const Placeholder = lazy(() => import("./pages/Placeholder"));
 
 function RouteFallback() {
@@ -31,7 +32,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/products" element={<ProductsPage />} />
-            <Route path="/customers" element={<Placeholder title="Customers" />} />
+            <Route path="/customers" element={<CustomerSegmentsPage />} />
             <Route path="/analytics" element={<Placeholder title="Analytics" />} />
             <Route path="/settings" element={<Placeholder title="Settings" />} />
           </Route>

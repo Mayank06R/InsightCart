@@ -13,7 +13,7 @@ export default function Dashboard() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-          E Commerce Analytics
+          InsightCart Intelligence
         </h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Track your store performance and understand your sales.

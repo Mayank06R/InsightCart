@@ -13,7 +13,7 @@ export function Header({ onOpenMenu }) {
       </button>
 
       <h1 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-        E Commerce Analytics
+       InsightCart
       </h1>
 
       <div className="ml-auto flex items-center gap-3">
