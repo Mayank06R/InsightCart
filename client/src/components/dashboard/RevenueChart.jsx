@@ -68,14 +68,23 @@ export function RevenueChart() {
               width={48}
             />
             <Tooltip content={<RevenueTooltip />} cursor={{ stroke: axis.grid, strokeWidth: 1 }} />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              stroke={BRAND_LINE}
-              strokeWidth={2}
-              fill="url(#revenueFill)"
-              name="Revenue"
-            />
+         <Area
+  type="monotone"
+  dataKey="revenue"
+  stroke={BRAND_LINE}
+  strokeWidth={2.5}
+  fill="url(#revenueFill)"
+  name="Revenue"
+  isAnimationActive={!loading}
+  animationDuration={1200}
+  animationEasing="ease-out"
+  activeDot={{
+    r: 5,
+    stroke: BRAND_LINE,
+    strokeWidth: 2,
+    fill: BRAND_LINE,
+  }}
+/>
           </AreaChart>
         </ResponsiveContainer>
       </div>

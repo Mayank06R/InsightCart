@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Crown,
@@ -21,6 +21,11 @@ import {
   YAxis,
 } from "recharts";
 import { getCustomerSegments } from "../api/analyticsApi";
+const CustomerSegments3D = lazy(() =>
+  import("../components/dashboard/CustomerSegments3D").then((module) => ({
+    default: module.CustomerSegments3D,
+  }))
+);
 
 const SEGMENT_META = {
   Champions: {
@@ -205,6 +210,23 @@ export default function CustomerSegmentsPage() {
         <MetricCard label="At risk + hibernating" value={loading ? "â€”" : atRiskCount.toLocaleString()} detail="Potential win-back opportunities" icon={ShieldAlert} />
       </section>
 
+      <Suspense
+        fallback={
+          <div role="status" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-sm text-slate-400">
+            Loading interactive customer universe...
+          </div>
+        }
+      >
+        <CustomerSegments3D
+          segments={segments}
+          selectedSegment={selectedSegment}
+          totalCustomers={payload?.totalCustomers ?? 0}
+          loading={loading}
+          onSelectSegment={(name) =>
+            setSelectedSegment((current) => (current === name ? "All segments" : name))
+          }
+        />
+      </Suspense>
       <section className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-wrap items-start justify-between gap-2">

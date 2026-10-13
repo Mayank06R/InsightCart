@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { FilterBar } from "../components/dashboard/FilterBar";
 import { StatCardsGrid } from "../components/dashboard/StatCardsGrid";
 import { RevenueChart } from "../components/dashboard/RevenueChart";
@@ -7,26 +8,36 @@ import { OrderStatusChart } from "../components/dashboard/OrderStatusChart";
 import { TopProductsTable } from "../components/dashboard/TopProductsTable";
 import { RecentOrdersTable } from "../components/dashboard/RecentOrdersTable";
 import { SectionErrorBoundary } from "../components/common/SectionErrorBoundary";
+const CommerceHero3D = lazy(() =>
+  import("../components/dashboard/CommerceHero3D").then((module) => ({
+    default: module.CommerceHero3D,
+  }))
+);
 
 export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-          InsightCart Intelligence
-        </h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Track your store performance and understand your sales.
-        </p>
+      <Suspense
+        fallback={
+          <div
+            role="status"
+            className="flex min-h-[390px] items-center justify-center rounded-[28px] border border-slate-800 bg-[#070b14] p-6 text-sm text-slate-400"
+          >
+            Loading interactive 3D scene...
+          </div>
+        }
+      >
+        <CommerceHero3D />
+      </Suspense>
+
+      <div id="overview-metrics" className="scroll-mt-24 flex flex-col gap-6">
+        <FilterBar />
+        <SectionErrorBoundary label="stat cards">
+          <StatCardsGrid />
+        </SectionErrorBoundary>
       </div>
 
-      <FilterBar />
-
-      <SectionErrorBoundary label="stat cards">
-        <StatCardsGrid />
-      </SectionErrorBoundary>
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div id="sales-insights" className="scroll-mt-24 grid grid-cols-1 gap-4 xl:grid-cols-2">
         <SectionErrorBoundary label="revenue chart">
           <RevenueChart />
         </SectionErrorBoundary>
