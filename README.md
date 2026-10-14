@@ -14,6 +14,26 @@ InsightCart is a full-stack e-commerce analytics dashboard with interactive sale
 
 The API is hosted on Render and uses MongoDB Atlas. The free backend instance may spin down after a period of inactivity, so the first request after idle time can take longer while it wakes up.
 
+## Screenshots
+
+### Dashboard — 3D commerce overview
+
+![InsightCart dashboard with the 3D hero and KPI cards](docs/screenshots/dashboard-3d-hero.png)
+
+### Customer Intelligence — interactive RFM segments
+
+![Customer Intelligence page with interactive customer segment universe](docs/screenshots/customer-intelligence-3d.png)
+
+### Analytics Studio
+
+![Analytics Studio with date filters, revenue KPIs, and charts](docs/screenshots/analytics-studio.png)
+
+### Settings and connection health
+
+![Settings page showing appearance controls and API/database health](docs/screenshots/settings-health.png)
+
+These screenshots show the interface captured during local testing. Live data and connection status can change over time.
+
 ## Features
 
 ### Interactive dashboard
@@ -218,7 +238,8 @@ server/
   services/                 Business logic and aggregation pipelines
   models/                   Mongoose models
   tests/                    Unit and integration tests
-docs/screenshots/           Project screenshots
+docs/
+  screenshots/               Dashboard, Customer Intelligence, Analytics, Settings
 ```
 
 ## Contributions in this fork
